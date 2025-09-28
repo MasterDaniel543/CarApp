@@ -14,7 +14,7 @@ app.use(cors({
     'http://localhost:8081',
     'http://localhost:19006', 
     'exp://localhost:19000',
-    'https://carapp-production-b90f.up.railway.app'
+    'https://mongodb-production-634c.up.railway.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -23,12 +23,12 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Conexión a MongoDB Atlas
+// Conexión a MongoDB Railway
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('✅ Conectado a MongoDB Atlas'))
+.then(() => console.log('✅ Conectado a MongoDB Railway'))
 .catch(err => console.error('❌ Error conectando a MongoDB:', err));
 
 // Rutas
@@ -37,9 +37,9 @@ app.use('/api/cars', require('./routes/cars'));
 // Ruta de prueba
 app.get('/', (req, res) => {
   res.json({ 
-    message: '🚗 Car Information API - Propia',
+    message: '🚗 Car Information API - Railway + MongoDB',
     version: '3.0.0',
-    status: 'API propia funcionando en Railway',
+    status: 'API funcionando en Railway con MongoDB integrado',
     endpoints: {
       cars: '/api/cars',
       carById: '/api/cars/:id',
