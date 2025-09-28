@@ -185,45 +185,22 @@ const carsData = [
 
 async function seedDatabase() {
   try {
-    console.log('🔌 Conectando a MongoDB Atlas...');
+    console.log('🔌 Conectando a MongoDB Railway...');
     
-    // Conectar a MongoDB
-    await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log('✅ Conectado a MongoDB Atlas');
+    // Conectar a MongoDB Railway (sin opciones deprecadas)
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('✅ Conectado a MongoDB Railway');
 
     // Limpiar colección existente
     const deleteResult = await Car.deleteMany({});
     console.log(`🗑️ ${deleteResult.deletedCount} vehículos anteriores eliminados`);
 
     // Insertar nuevos datos
-    const cars = await Car.insertMany(carsData);
-    console.log(`✅ ${cars.length} vehículos insertados exitosamente`);
+    const insertResult = await Car.insertMany(carsData);
+    console.log(`✅ ${insertResult.length} vehículos insertados exitosamente`);
 
-    // Mostrar resumen
-    console.log('\n📊 Resumen de vehículos insertados:');
-    const summary = await Car.aggregate([
-      {
-        $group: {
-          _id: '$make',
-          count: { $sum: 1 },
-          avgPrice: { $avg: '$price' }
-        }
-      },
-      { $sort: { count: -1 } }
-    ]);
-
-    summary.forEach(item => {
-      console.log(`   ${item._id}: ${item.count} vehículos (Precio promedio: $${Math.round(item.avgPrice).toLocaleString()})`);
-    });
-
-    console.log('\n🎉 Base de datos poblada exitosamente!');
-    console.log('🚀 Ahora puedes iniciar el servidor con: npm start');
-    
+    console.log('🎉 Base de datos poblada correctamente');
     process.exit(0);
-
   } catch (error) {
     console.error('❌ Error poblando base de datos:', error);
     process.exit(1);
