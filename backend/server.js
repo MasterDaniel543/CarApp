@@ -10,8 +10,15 @@ const PORT = process.env.PORT || 5000;
 // Middlewares
 app.use(helmet());
 app.use(cors({
-  origin: '*', // Railway necesita esto para funcionar globalmente
-  credentials: true
+  origin: [
+    'http://localhost:8081',
+    'http://localhost:19006', 
+    'exp://localhost:19000',
+    'https://carapp-production-b90f.up.railway.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
