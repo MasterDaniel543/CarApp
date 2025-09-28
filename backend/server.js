@@ -23,8 +23,8 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Conexión a MongoDB Railway
-mongoose.connect(process.env.MONGODB_URI, {
+// Conexión a MongoDB Railway usando variable automática
+mongoose.connect(process.env.MONGO_URL || process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
