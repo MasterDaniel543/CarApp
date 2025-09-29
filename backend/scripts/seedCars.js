@@ -187,8 +187,8 @@ async function seedDatabase() {
   try {
     console.log('🔌 Conectando a MongoDB Railway...');
     
-    // Usar MONGO_URL que Railway proporciona automáticamente
-    await mongoose.connect(process.env.MONGO_URL || process.env.MONGODB_URI);
+    // Usar MONGO_PUBLIC_URL para conexión desde máquina local
+    await mongoose.connect(process.env.MONGO_PUBLIC_URL || process.env.MONGO_URL || process.env.MONGODB_URI);
     console.log('✅ Conectado a MongoDB Railway');
 
     // Limpiar colección existente
