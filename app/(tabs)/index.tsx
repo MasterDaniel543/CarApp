@@ -1,98 +1,170 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, Image, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
+import { indexStyles } from '@/styles/index.styles';
+import { carsApiService, ExternalCar } from '@/services/carsApi';
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const router = useRouter();
+  const [recommendedCars, setRecommendedCars] = useState<ExternalCar[]>([]);
+  const [currentCarIndex, setCurrentCarIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  useEffect(() => {
+    loadRecommendedCars();
+  }, []);
+
+  // Auto-play effect - solo automático
+  useEffect(() => {
+    if (recommendedCars.length > 1) {
+      intervalRef.current = setInterval(() => {
+        setCurrentCarIndex((prev) => (prev + 1) % recommendedCars.length);
+      }, 2500); // Cambiar cada 2.5 segundos
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [recommendedCars.length]);
+
+  const loadRecommendedCars = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log('Cargando autos recomendados desde API externa...');
+      const cars = await carsApiService.getRecommendedCars();
+      console.log('Autos cargados:', cars);
+      setRecommendedCars(cars);
+    } catch (err) {
+      console.error('Error loading recommended cars:', err);
+      setError('Error al cargar los autos recomendados');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const goToSlide = (index: number) => {
+    setCurrentCarIndex(index);
+  };
+
+  const handleCarPress = () => {
+    const carId = currentCar._id || currentCar.id;
+    if (carId) {
+      router.push(`/car/${carId}`);
+    }
+  };
+
+  const currentCar = recommendedCars[currentCarIndex];
+
+  if (loading) {
+    return (
+      <View style={[indexStyles.fullContainer, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#FF6B35" />
+        <Text style={{ marginTop: 10, fontSize: 16, color: '#666' }}>
+          Cargando autos recomendados...
+        </Text>
+      </View>
+    );
+  }
+
+  if (error || !currentCar) {
+    return (
+      <View style={[indexStyles.fullContainer, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ fontSize: 16, color: '#FF0000', textAlign: 'center', marginBottom: 20 }}>
+          {error || 'No se pudieron cargar los autos'}
+        </Text>
+        <TouchableOpacity 
+          onPress={loadRecommendedCars}
+          style={{
+            backgroundColor: '#FF6B35',
+            paddingHorizontal: 20,
+            paddingVertical: 10,
+            borderRadius: 8
+          }}
+        >
+          <Text style={{ color: 'white', fontSize: 16 }}>Reintentar</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView style={indexStyles.fullContainer}>
+      {/* Hero Section */}
+      <View style={indexStyles.heroSection}>
+        <Text style={indexStyles.heroTitle}>
+          ¡El vehículo perfecto para ti!
+        </Text>
+        <Text style={indexStyles.heroSubtitle}>
+          El camino hacia experiencias inolvidables{'\n'}
+          comienza con inspiración
+        </Text>
+        
+        {/* Car Image Slider - Solo automático */}
+        <View style={indexStyles.carSliderContainer}>
+          <TouchableOpacity style={indexStyles.carImageContainer} onPress={handleCarPress}>
+            <Image 
+              source={{ uri: currentCar.image || 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&h=400&fit=crop' }}
+              style={indexStyles.carImage}
+              resizeMode="cover"
+            />
+            
+            {/* Car Info Overlay */}
+            <View style={indexStyles.carInfoOverlay}>
+              <Text style={indexStyles.carBrand}>{currentCar.make}</Text>
+              <Text style={indexStyles.carModel}>{currentCar.model} {currentCar.year}</Text>
+              {currentCar.combination_mpg && (
+                <Text style={indexStyles.carSpecs}>
+                  {currentCar.combination_mpg} MPG • {currentCar.transmission}
+                </Text>
+              )}
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* Car Indicators - Solo visuales, clickeables para navegación rápida */}
+        {recommendedCars.length > 1 && (
+          <View style={indexStyles.indicatorsContainer}>
+            {recommendedCars.map((_, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  indexStyles.indicator,
+                  index === currentCarIndex && indexStyles.activeIndicator
+                ]}
+                onPress={() => goToSlide(index)}
+              />
+            ))}
+          </View>
+        )}
+
+        {/* Car Details */}
+        <View style={indexStyles.carDetailsContainer}>
+          <Text style={indexStyles.carDetailsTitle}>Detalles del vehículo</Text>
+          <View style={indexStyles.carDetailsGrid}>
+            <View style={indexStyles.carDetailItem}>
+              <Text style={indexStyles.carDetailLabel}>Combustible</Text>
+              <Text style={indexStyles.carDetailValue}>{currentCar.fuel_type || 'Gasolina'}</Text>
+            </View>
+            <View style={indexStyles.carDetailItem}>
+              <Text style={indexStyles.carDetailLabel}>Transmisión</Text>
+              <Text style={indexStyles.carDetailValue}>{currentCar.transmission || 'Automática'}</Text>
+            </View>
+            <View style={indexStyles.carDetailItem}>
+              <Text style={indexStyles.carDetailLabel}>Tracción</Text>
+              <Text style={indexStyles.carDetailValue}>{currentCar.drive?.toUpperCase() || 'FWD'}</Text>
+            </View>
+            <View style={indexStyles.carDetailItem}>
+              <Text style={indexStyles.carDetailLabel}>Consumo</Text>
+              <Text style={indexStyles.carDetailValue}>{currentCar.combination_mpg || 'N/A'} MPG</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
