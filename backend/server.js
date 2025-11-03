@@ -57,6 +57,13 @@ app.get('/', (req, res) => {
 
 // Manejo de errores
 app.use((err, req, res, next) => {
+  // Detecta errores de parseo JSON de body-parser
+  if (err instanceof SyntaxError && 'body' in err) {
+    return res.status(400).json({
+      error: 'JSON malformado',
+      message: 'El cuerpo de la solicitud no es JSON válido'
+    });
+  }
   console.error(err.stack);
   res.status(500).json({ error: 'Algo salió mal!', message: err.message });
 });
