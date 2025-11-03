@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "start": "cd backend && npm start",
-    "install": "cd backend && npm ci --omit=dev"
+    "install": "cd backend && npm install --omit=dev"
   },
   "engines": {
     "node": "20.x"
