@@ -38,11 +38,12 @@ mongoose.connect(process.env.MONGO_URL || process.env.MONGODB_URI, {
 app.use('/api/cars', require('./routes/cars'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/favorites', require('./routes/favorites'));
+app.use('/api/users', require('./routes/users'));
 
 // Ruta de prueba
 app.get('/', (req, res) => {
   res.json({
-    message: '🚗 Car Information API - Railway + MongoDB',
+    message: 'Car Information API - Railway + MongoDB',
     version: '3.0.0',
     status: 'API funcionando en Railway con MongoDB integrado',
     endpoints: {
