@@ -37,6 +37,7 @@ mongoose.connect(process.env.MONGO_URL || process.env.MONGODB_URI, {
 // Rutas
 app.use('/api/cars', require('./routes/cars'));
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/favorites', require('./routes/favorites'));
 
 // Ruta de prueba
 app.get('/', (req, res) => {
