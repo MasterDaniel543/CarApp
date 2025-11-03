@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "scripts": {
     "start": "cd backend && npm start",
-    "install": "cd backend && npm install"
+    "install": "cd backend && npm ci --omit=dev"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "20.x"
   }
 }
