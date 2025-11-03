@@ -10,33 +10,37 @@ const PORT = process.env.PORT || 5000;
 // Middlewares
 app.use(helmet());
 app.use(cors({
-  origin: [
-    'http://localhost:8081',
-    'http://localhost:19006', 
-    'exp://localhost:19000',
-    'https://mongodb-production-634c.up.railway.app'
-  ],
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+app.options('*', cors()); // responde preflights CORS
+
+// Log de diagnóstico
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Conexión a MongoDB Railway usando variable automática
+// Conexión a MongoDB (Railway)
 mongoose.connect(process.env.MONGO_URL || process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('✅ Conectado a MongoDB Railway'))
-.catch(err => console.error('❌ Error conectando a MongoDB:', err));
+.then(() => console.log(' Conectado a MongoDB Railway'))
+.catch(err => console.error('Error conectando a MongoDB:', err));
 
 // Rutas
 app.use('/api/cars', require('./routes/cars'));
+app.use('/api/auth', require('./routes/auth'));
 
 // Ruta de prueba
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     message: '🚗 Car Information API - Railway + MongoDB',
     version: '3.0.0',
     status: 'API funcionando en Railway con MongoDB integrado',
@@ -44,7 +48,9 @@ app.get('/', (req, res) => {
       cars: '/api/cars',
       carById: '/api/cars/:id',
       brands: '/api/cars/brands/all',
-      recommended: '/api/cars/recommended/list'
+      recommended: '/api/cars/recommended/list',
+      register: '/api/auth/register',
+      login: '/api/auth/login',
     }
   });
 });
@@ -52,22 +58,16 @@ app.get('/', (req, res) => {
 // Manejo de errores
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ 
-    error: 'Algo salió mal!',
-    message: err.message 
-  });
+  res.status(500).json({ error: 'Algo salió mal!', message: err.message });
 });
 
 // 404 handler
 app.use('*', (req, res) => {
-  res.status(404).json({
-    error: 'Endpoint no encontrado',
-    message: 'La ruta solicitada no existe'
-  });
+  res.status(404).json({ error: 'Endpoint no encontrado', message: 'La ruta solicitada no existe' });
 });
 
-// Railway usa la variable PORT automáticamente
+// Arranque
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
-  console.log(`📡 API disponible en Railway`);
+  console.log(`Servidor corriendo en puerto ${PORT}`);
+  console.log(`API disponible en Railway`);
 });

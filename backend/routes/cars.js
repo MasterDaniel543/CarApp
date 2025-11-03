@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Car = require('../models/Car');
 
-// ⚠️ IMPORTANTE: Las rutas específicas DEBEN ir ANTES que las rutas con parámetros
+// IMPORTANTE: Las rutas específicas DEBEN ir ANTES que las rutas con parámetros
 
 // GET /api/cars/brands/all - Obtener todas las marcas
 router.get('/brands/all', async (req, res) => {
@@ -122,7 +122,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/cars/:id - Obtener vehículo por ID (DEBE ir después de las rutas específicas)
+// GET /api/cars/:id - Obtener vehículo por ID 
 router.get('/:id', async (req, res) => {
   try {
     const car = await Car.findById(req.params.id);
